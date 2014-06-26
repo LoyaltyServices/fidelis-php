@@ -1,6 +1,5 @@
 <?php namespace LoyaltyServices\Fidelis;
 
-use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 
@@ -36,13 +35,6 @@ class FidelisServiceProvider extends ServiceProvider {
 
 			// return pusher
 			return $fidelis;
-		});
-
-		// Shortcut so developers don't need to add an Alias in app/config/app.php
-		$this->app->booting(function ()
-		{
-			$loader = AliasLoader::getInstance();
-			$loader->alias('Fidelis', 'LoyaltyServices\Fidelis\Facades\Fidelis');
 		});
 	}
 

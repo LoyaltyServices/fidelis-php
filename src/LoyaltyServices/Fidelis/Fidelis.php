@@ -113,7 +113,6 @@ class Fidelis {
 		{
 			case 0:
 				return true;
-				break;
 
 			case 1:
 				throw new FidelisException('Invalid WCF', 400);
@@ -130,5 +129,37 @@ class Fidelis {
 			default:
 				throw new FidelisException('Unknown error. Fidelis responded with: ' . $response, 500);
 		}
+	}
+
+	public function createRefundTransaction($cardNumber, $amount)
+	{
+		$function = 'CreateTransactionWeb_PHP';
+		$params   = [
+			'cardNumber'     => $cardNumber,
+			'Amount'         => $amount,
+			'ProcessingCode' => '13000',
+			'TerminalID'     => $this->virtualTerminalId
+		];
+
+		$response = $this->makeRequest($function, $params);
+
+		switch ($response->Table->ResponseCode)
+		{
+			case '00':
+				return true;
+
+			default:
+				throw new FidelisException('Unknown error. Fidelis responded with: ' . $response, 500);
+		}
+	}
+
+	/**
+	 * @param $cardNumber
+	 *
+	 * @return float The points balance of the card
+	 */
+	public function getBalanceForCard($cardNumber)
+	{
+		// Do the thing
 	}
 }
