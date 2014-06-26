@@ -160,6 +160,11 @@ class Fidelis {
 	 */
 	public function getBalanceForCard($cardNumber)
 	{
-		// Do the thing
+		$function = 'CheckCardholderBalance_Email_PHP';
+		$params   = [
+			'cardNumber' => $cardNumber
+		];
+
+		return $this->makeRequest($function, $params);
 	}
 }
