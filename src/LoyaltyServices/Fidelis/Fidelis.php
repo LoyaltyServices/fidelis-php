@@ -131,7 +131,7 @@ class Fidelis {
 		}
 	}
 
-	public function createRefundTransaction($cardNumber, $amount)
+	public function createRedemptionTransaction($cardNumber, $amount)
 	{
 		$function = 'CreateTransactionWeb_PHP';
 		$params   = [
