@@ -14,7 +14,8 @@ class Fidelis {
 	private $generalServiceUrl = 'http://112.109.69.169/GENWCFService/Service.svc?wsdl';
 	private $soapOptions = [
 		'exceptions' => true,
-		'trace'      => true
+		'trace'      => true,
+		'cache_wsdl' => WSDL_CACHE_NONE
 	];
 
 	/** @var string The unique identifier for the client programme */
@@ -41,13 +42,13 @@ class Fidelis {
 	 * @return \SimpleXMLElement
 	 * @throws Exceptions\FidelisException
 	 */
-	private function makeRequest($function, $params)
+	private function makeRequest($function, $params = [], $service = 'generalService', $WCFKey = 'WCF')
 	{
-		$params['WCF'] = $this->WCF;
+		$params[$WCFKey] = $this->WCF;
 
 		try
 		{
-			$response = $this->generalService->__soapCall($function, [$params]);
+			$response = $this->{$service}->__soapCall($function, [$params]);
 		}
 
 		catch (SoapFault $e)
@@ -141,12 +142,52 @@ class Fidelis {
 			'TerminalID'     => $this->virtualTerminalId
 		];
 
-		$response = $this->makeRequest($function, $params);
+		$response = $this->makeRequest($function, $params, 'generalService', 'ClientCode');
 
 		switch ($response->Table->ResponseCode)
 		{
-			case '00':
+			case '000':
 				return true;
+
+			case '012':
+				throw new FidelisException('Invalid transaction.');
+				break;
+
+			case '054':
+				throw new FidelisException('Card Expired');
+				break;
+
+			case '031':
+				throw new FidelisException('Wrong merchant');
+				break;
+
+			case '041':
+				throw new FidelisException('Already loaded');
+				break;
+
+			case '039':
+				throw new FidelisException('Incorrect card type');
+				break;
+
+			case '060':
+				throw new FidelisException('Transaction type "13000" not allowed for card number "' . $cardNumber . '"');
+				break;
+
+			case '056':
+				throw new FidelisException('Card not yet activated for redemption');
+				break;
+
+			case '051':
+				throw new FidelisException('Insufficient points');
+				break;
+
+			case '094':
+				throw new FidelisException('Duplicate transaction');
+				break;
+
+			case 'RV':
+				throw new FidelisException('Reversal');
+				break;
 
 			default:
 				throw new FidelisException('Unknown error. Fidelis responded with: ' . $response, 500);
@@ -165,6 +206,19 @@ class Fidelis {
 			'cardNumber' => $cardNumber
 		];
 
-		return $this->makeRequest($function, $params);
+		$response     = $this->makeRequest($function, $params);
+		$responseCode = $response->Table->Column1;
+		$balance      = $response->Table->Column2;
+
+		return (float) $balance;
+	}
+
+	public function getBalanceForAllCards()
+	{
+		$function = 'ReturnAllCardholderBalances_PHP';
+
+		$response = $this->makeRequest($function);
+
+		return $response;
 	}
 }
