@@ -213,12 +213,25 @@ class Fidelis {
 		return (float) $balance;
 	}
 
-	public function getBalanceForAllCards()
+	/**
+	 * @param null $since
+	 *
+	 * @return \SimpleXMLElement
+	 * @throws Exceptions\FidelisException
+	 */
+	public function getCardBalances($since = null)
 	{
 		$function = 'ReturnAllCardholderBalances_PHP';
 
+		if (! is_null($since))
+		{
+			$params = [
+				'since' => $since
+			];
+		}
+
 		$response = $this->makeRequest($function);
 
-		return $response;
+		return $response->Table;
 	}
 }
