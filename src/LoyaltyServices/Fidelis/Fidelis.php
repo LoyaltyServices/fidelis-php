@@ -49,7 +49,6 @@ class Fidelis {
 		try
 		{
 			$response = $this->{$service}->__soapCall($function, [$params]);
-			dd($params, $response);
 		}
 
 		catch (SoapFault $e)
