@@ -49,6 +49,7 @@ class Fidelis {
 		try
 		{
 			$response = $this->{$service}->__soapCall($function, [$params]);
+			dd($params, $response);
 		}
 
 		catch (SoapFault $e)
@@ -199,7 +200,7 @@ class Fidelis {
 	 *
 	 * @return float The points balance of the card
 	 */
-	public function getBalanceForCard($cardNumber)
+	public function getCardBalance($cardNumber)
 	{
 		$function = 'CheckCardholderBalance_Email_PHP';
 		$params   = [
@@ -219,18 +220,19 @@ class Fidelis {
 	 * @return \SimpleXMLElement
 	 * @throws Exceptions\FidelisException
 	 */
-	public function getCardBalances($since = null)
+	public function getCardBalances(DateTime $since = null)
 	{
-		$function = 'ReturnAllCardholderBalances_PHP';
+		$function = 'ReturnAllCardholderBalancesFromDate_PHP';
+		$params   = [];
 
 		if (! is_null($since))
 		{
 			$params = [
-				'since' => $since
+				'FromDate' => $since->setTimezone('Pacific/Auckland')->toW3CString()
 			];
 		}
 
-		$response = $this->makeRequest($function);
+		$response = $this->makeRequest($function, $params);
 
 		return $response->Table;
 	}
