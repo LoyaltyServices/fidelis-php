@@ -112,18 +112,18 @@ class Fidelis {
 
 		switch ($response->Table->ReturnCode)
 		{
-			case 0:
+			case '000':
 				return true;
 
-			case 1:
+			case '001':
 				throw new FidelisException('Invalid WCF', 400);
 				break;
 
-			case 2:
+			case '002':
 				throw new FidelisException('Invalid Card Number', 400);
 				break;
 
-			case 9:
+			case '009':
 				throw new FidelisException('Web service error', 500);
 				break;
 
@@ -144,7 +144,7 @@ class Fidelis {
 
 		$response = $this->makeRequest($function, $params, 'generalService', 'ClientCode');
 
-		switch ($response->Table->ResponseCode)
+		switch ($response->Table->ReturnCode)
 		{
 			case '000':
 				return true;
