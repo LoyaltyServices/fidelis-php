@@ -132,14 +132,15 @@ class Fidelis {
 		}
 	}
 
-	public function createRedemptionTransaction($cardNumber, $amount)
+	public function createRedemptionTransaction($cardNumber, $amount, $force = false)
 	{
 		$function = 'CreateTransactionWeb_PHP';
 		$params   = [
-			'cardNumber'     => $cardNumber,
-			'Amount'         => $amount,
-			'ProcessingCode' => '13000',
-			'TerminalID'     => $this->virtualTerminalId
+			'cardNumber'       => $cardNumber,
+			'Amount'           => $amount,
+			'ProcessingCode'   => '13000',
+			'TerminalID'       => $this->virtualTerminalId,
+			'ForceTransaction' => (int) $force
 		];
 
 		$response = $this->makeRequest($function, $params, 'generalService', 'ClientCode');
