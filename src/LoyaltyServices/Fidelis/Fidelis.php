@@ -90,6 +90,36 @@ class Fidelis {
 	}
 
 	/**
+	 * @param DateTime $from
+	 * @param DateTime $to
+	 *
+	 * @return array
+	 */
+	public function getTransactions(DateTime $from = null, DateTime $to = null)
+	{
+		$response = $this->getTransactionsByPage($from, $to);
+
+		$meta         = $response->Table;
+		$transactions = $response->Table1;
+
+		if ($meta->PgCount > 1)
+		{
+			$page = 2;
+
+			while ($page <= $meta->PgCount)
+			{
+				$response = $this->getTransactionsByPage($from, $to, $page);
+
+				$transactions = array_merge($transactions, $response->Table1);
+
+				$page++;
+			}
+		}
+
+		return $transactions;
+	}
+
+	/**
 	 * @param string|int $cardNumber    The card number to credit this transaction against
 	 * @param int|float  $amount        The amount of the transaction, in dollars
 	 * @param int        $expiresInDays Number of days until this purchase expires
