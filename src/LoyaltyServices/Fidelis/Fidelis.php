@@ -58,7 +58,7 @@ class Fidelis {
 
 		$resultProperty = $function . 'Result';
 
-		return simplexml_load_string($response->{$resultProperty});
+		return json_decode(json_encode(simplexml_load_string($response->{$resultProperty})));
 	}
 
 	/////////////////////////////////////////////////////////////////////
