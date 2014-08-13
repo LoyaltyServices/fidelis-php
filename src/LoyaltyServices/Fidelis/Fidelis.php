@@ -2,6 +2,7 @@
 
 use Carbon\Carbon;
 use DateTime;
+use DateTimeZone;
 use SoapFault;
 use SoapClient;
 use LoyaltyServices\Fidelis\Exceptions\FidelisException;
@@ -75,8 +76,8 @@ class Fidelis {
 	 */
 	public function getTransactionsByPage(DateTime $from = null, DateTime $to = null, $page = 1)
 	{
-		if (! is_null($from)) $from = $from->format('Y-m-d');
-		if (! is_null($to)) $to = $to->format('Y-m-d');
+		if (! is_null($from)) $from = $from->setTimezone(new DateTimeZone('Pacific/Auckland'))->format('Y-m-d H:i:s');
+		if (! is_null($to)) $to = $to->setTimezone(new DateTimeZone('Pacific/Auckland'))->format('Y-m-d H:i:s');
 
 		$function = 'ReturnTransactionsGeneral_PHP';
 		$params   = [
@@ -100,7 +101,7 @@ class Fidelis {
 		$response = $this->getTransactionsByPage($from, $to);
 
 		$meta         = $response->Table;
-		$transactions = $response->Table1;
+		$transactions = isset($response->Table1) ? $response->Table1 : [];
 
 		if ($meta->PgCount > 1)
 		{
@@ -112,7 +113,7 @@ class Fidelis {
 
 				$transactions = array_merge($transactions, $response->Table1);
 
-				$page++;
+				$page ++;
 			}
 		}
 
@@ -264,6 +265,6 @@ class Fidelis {
 
 		$response = $this->makeRequest($function, $params);
 
-		return $response->Table;
+		return isset($response->Table) ? $response->Table : [];
 	}
 }
