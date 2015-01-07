@@ -9,10 +9,25 @@ use LoyaltyServices\Fidelis\Exceptions\FidelisException;
 
 class Fidelis {
 
+	/**
+	 * @var SoapClient
+     */
 	private $loyaltyService;
+	/**
+	 * @var SoapClient
+     */
 	private $generalService;
+	/**
+	 * @var string
+     */
 	private $loyaltyServiceUrl = 'http://112.109.69.169/LSWCFService/Service.svc?wsdl';
+	/**
+	 * @var string
+     */
 	private $generalServiceUrl = 'http://112.109.69.169/GENWCFService/Service.svc?wsdl';
+	/**
+	 * @var array
+     */
 	private $soapOptions = [
 		'exceptions' => true,
 		'trace'      => true,
@@ -25,6 +40,10 @@ class Fidelis {
 	/** @var string The virtual terminal ID. Required to emulate the functionality around EFTPOS terminals. */
 	private $virtualTerminalId;
 
+	/**
+	 * @param $WCF
+	 * @param $virtualTerminalId
+     */
 	public function __construct($WCF, $virtualTerminalId)
 	{
 		// Set up our SOAP services
@@ -37,11 +56,13 @@ class Fidelis {
 	}
 
 	/**
-	 * @param $function
-	 * @param $params
+	 * @param string $function
+	 * @param array  $params
+	 * @param string $service
+	 * @param string $WCFKey
 	 *
 	 * @return \SimpleXMLElement
-	 * @throws Exceptions\FidelisException
+	 * @throws FidelisException
 	 */
 	private function makeRequest($function, $params = [], $service = 'generalService', $WCFKey = 'WCF')
 	{
@@ -163,7 +184,15 @@ class Fidelis {
 		}
 	}
 
-	public function createRedemptionTransaction($cardNumber, $amount, $force = false)
+	/**
+	 * @param      $cardNumber
+	 * @param      $amount
+	 * @param bool $force
+	 *
+	 * @return bool
+	 * @throws FidelisException
+     */
+    public function createRedemptionTransaction($cardNumber, $amount, $force = false)
 	{
 		$function = 'CreateTransactionWeb_PHP';
 		$params   = [
@@ -246,10 +275,10 @@ class Fidelis {
 	}
 
 	/**
-	 * @param null $since
+	 * @param DateTime|null $since
 	 *
 	 * @return \SimpleXMLElement
-	 * @throws Exceptions\FidelisException
+	 * @throws FidelisException
 	 */
 	public function getCardBalances(DateTime $since = null)
 	{
@@ -266,5 +295,36 @@ class Fidelis {
 		$response = $this->makeRequest($function, $params);
 
 		return isset($response->Table) ? $response->Table : [];
+	}
+
+	/////////////////////////////////////////////////////////////////////
+	//// LOYALTY SERVICE
+	/////////////////////////////////////////////////////////////////////
+
+	/**
+	 * @param $cardNumber
+	 *
+	 * @return \SimpleXMLElement
+	 */
+	public function getCardholderByCardNumber($cardNumber)
+	{
+		$function = 'ReturnCardholderDetails_PHP';
+		$params = [
+			'cardNumber' => $cardNumber
+		];
+
+		$response = $this->makeRequest($function, $params);
+
+		dd($response);
+
+		return isset($response->Table) ? $response->Table : [];
+	}
+
+	/**
+	 * @param $email
+     */
+	public function getCardholderByEmail($email)
+	{
+
 	}
 }

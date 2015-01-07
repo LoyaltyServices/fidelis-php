@@ -19,7 +19,9 @@ class FidelisServiceProvider extends ServiceProvider {
 	 */
 	public function boot()
 	{
-		$this->package('loyalty-services/fidelis');
+		$this->app->bindShared('fidelis', function ($app) {
+			return new Fidelis($app['config']->get('fidelis::WCF'), $app['config']->get('fidelis::virtualTerminalId'));
+		});
 	}
 
 	/**
@@ -29,13 +31,7 @@ class FidelisServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
-		$this->app['fidelis'] = $this->app->share(function ($app)
-		{
-			$fidelis = new Fidelis(Config::get('fidelis::WCF'), Config::get('fidelis::virtualTerminalId'));
-
-			// return pusher
-			return $fidelis;
-		});
+		
 	}
 
 	/**
