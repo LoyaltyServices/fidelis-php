@@ -19,7 +19,7 @@ class FidelisServiceProvider extends ServiceProvider {
 	 */
 	public function boot()
 	{
-		$this->app->bindShared('fidelis', function ($app) {
+		$this->app->bindShared('\LoyaltyServices\Fidelis\Fidelis', function ($app) {
 			return new Fidelis($app['config']->get('services.fidelis.wcf'), $app['config']->get('services.fidelis.terminal_id'));
 		});
 	}
