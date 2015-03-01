@@ -377,4 +377,32 @@ class Fidelis
                 throw new FidelisException('Unknown error', 500);
         }
     }
+
+    public function getPointsExpiringByEmail($email, $year, $month)
+    {
+        $function = 'CheckCardholderNextExpired';
+        $params   = [
+            'Email' => $email,
+            // The last day of the given year/month
+            'DateToExpireTo' => date('Y-m-t', strtotime($year . '=' . $month))
+        ];
+
+        $response = $this->makeRequest($function, $params);
+
+        $returnCode = (int) $response->Table->ReturnCode;
+
+        switch ($returnCode) {
+            case 0:
+                return isset($response->Table) ? $response->Table : null;
+
+            case 1:
+                throw new FidelisException('Invalid Card Number', 400);
+
+            case 2:
+                throw new FidelisException('Invalid Scripting', 500);
+
+            default:
+                throw new FidelisException('Unknown error', 500);
+        }
+    }
 }
