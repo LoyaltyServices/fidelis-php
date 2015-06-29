@@ -393,7 +393,7 @@ class Fidelis
 
         switch ($returnCode) {
             case 0:
-                return isset($response->Table) ? $response->Table : null;
+                return isset($response->Table) ? $response->Table->ReturnMsg : null;
 
             case 1:
                 throw new FidelisException('Invalid Card Number', 400);
