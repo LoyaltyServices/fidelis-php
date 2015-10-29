@@ -1,11 +1,10 @@
 <?php namespace LoyaltyServices\Fidelis;
 
-use Carbon\Carbon;
 use DateTime;
 use DateTimeZone;
-use SoapFault;
-use SoapClient;
 use LoyaltyServices\Fidelis\Exceptions\FidelisException;
+use SoapClient;
+use SoapFault;
 
 class Fidelis
 {
@@ -14,18 +13,22 @@ class Fidelis
      * @var SoapClient
      */
     private $loyaltyService;
+
     /**
      * @var SoapClient
      */
     private $generalService;
+
     /**
      * @var string
      */
     private $loyaltyServiceUrl = 'http://112.109.69.169/LSWCFService/Service.svc?wsdl';
+
     /**
      * @var string
      */
     private $generalServiceUrl = 'http://112.109.69.169/GENWCFService/Service.svc?wsdl';
+
     /**
      * @var array
      */
@@ -133,7 +136,7 @@ class Fidelis
 
                 $transactions = array_merge($transactions, $response->Table1);
 
-                $page ++;
+                $page++;
             }
         }
 
@@ -195,7 +198,7 @@ class Fidelis
             'Amount'           => $amount,
             'ProcessingCode'   => '13000',
             'TerminalID'       => $this->virtualTerminalId,
-            'ForceTransaction' => (int) $force
+            'ForceTransaction' => (int)$force
         ];
 
         $response = $this->makeRequest($function, $params, 'generalService', 'ClientCode');
@@ -243,6 +246,7 @@ class Fidelis
      * @param $cardNumber
      *
      * @return float The points balance of the card
+     * @throws \LoyaltyServices\Fidelis\Exceptions\FidelisException
      */
     public function getCardBalance($cardNumber)
     {
@@ -253,9 +257,20 @@ class Fidelis
 
         $response     = $this->makeRequest($function, $params);
         $responseCode = $response->Table->Column1;
-        $balance      = $response->Table->Column2;
 
-        return (float) $balance;
+        switch ($responseCode) {
+            case '000':
+                $balance = $response->Table->Column2;
+                return (float) $balance;
+                break;
+
+            case '001':
+                throw new FidelisException('Cardholder not found', 404);
+                break;
+
+            default:
+                throw new FidelisException('Unknown error. Fidelis responded with: ' . $response, 500);
+        }
     }
 
     /**
@@ -330,7 +345,7 @@ class Fidelis
 
         $response = $this->makeRequest($function, $params);
 
-        $returnCode = (int) $response->Table->ReturnCode;
+        $returnCode = (int)$response->Table->ReturnCode;
 
         switch ($returnCode) {
             case 9:
@@ -361,7 +376,7 @@ class Fidelis
 
         $response = $this->makeRequest($function, $params);
 
-        $returnCode = (int) $response->Table->ReturnCode;
+        $returnCode = (int)$response->Table->ReturnCode;
 
         switch ($returnCode) {
             case 1:
@@ -382,14 +397,14 @@ class Fidelis
     {
         $function = 'CheckCardholderNextExpired';
         $params   = [
-            'Email' => $email,
+            'Email'          => $email,
             // The last day of the given year/month
             'DateToExpireTo' => date('Y-m-t', strtotime($year . '=' . $month))
         ];
 
         $response = $this->makeRequest($function, $params);
 
-        $returnCode = (int) $response->Table->ReturnCode;
+        $returnCode = (int)$response->Table->ReturnCode;
 
         switch ($returnCode) {
             case 0:
