@@ -136,7 +136,7 @@ class Fidelis
 
                 $transactions = array_merge($transactions, $response->Table1);
 
-                $page++;
+                $page ++;
             }
         }
 
@@ -144,61 +144,51 @@ class Fidelis
     }
 
     /**
-     * @param string|int $cardNumber    The card number to credit this transaction against
-     * @param int|float  $amount        The amount of the transaction, in dollars
-     * @param int        $expiresInDays Number of days until this purchase expires
+     * @param string|int $cardNumber The card number to credit this transaction against
+     * @param int|float  $amount     The amount of the transaction, in dollars
+     * @param bool       $force
      *
      * @return bool True on success
      *
-     * @throws Exceptions\FidelisException
+     * @throws FidelisException
+     *
      */
-    public function createPurchaseTransaction($cardNumber, $amount, $expiresInDays = null)
+    public function createPurchaseTransaction($cardNumber, $amount, $force = false)
     {
-        $function = 'LoadCardholderExpiryByDays_PHP';
-        $params   = [
-            'cardNumber'    => $cardNumber,
-            'Amount'        => $amount,
-            'CardExpiresIn' => $expiresInDays,
-            'TerminalID'    => $this->virtualTerminalId
-        ];
-
-        $response = $this->makeRequest($function, $params);
-
-        switch ($response->Table->ReturnCode) {
-            case '000':
-                return true;
-
-            case '001':
-                throw new FidelisException('Invalid WCF', 400);
-
-            case '002':
-                throw new FidelisException('Invalid Card Number', 400);
-
-            case '009':
-                throw new FidelisException('Web service error', 500);
-
-            default:
-                throw new FidelisException('Unknown error. Fidelis responded with: ' . $response, 500);
-        }
+        return $this->createTransaction('3000', $cardNumber, $amount, $force);
     }
 
     /**
-     * @param      $cardNumber
-     * @param      $amount
-     * @param bool $force
+     * @param string|int $cardNumber The card number to credit this transaction against
+     * @param int|float  $amount     The amount of the transaction, in dollars
+     * @param bool       $force
      *
      * @return bool
      * @throws FidelisException
      */
     public function createRedemptionTransaction($cardNumber, $amount, $force = false)
     {
+        return $this->createTransaction('13000', $cardNumber, $amount, $force);
+    }
+
+    /**
+     * @param string     $processingCode The processing code: 3000 for purchase, 13000 for redemption
+     * @param string|int $cardNumber     The card number to credit this transaction against
+     * @param int|float  $amount         The amount of the transaction, in dollars
+     * @param bool|false $force
+     *
+     * @return bool
+     * @throws FidelisException
+     */
+    public function createTransaction($processingCode, $cardNumber, $amount, $force = false)
+    {
         $function = 'CreateTransactionWeb_PHP';
         $params   = [
             'cardNumber'       => $cardNumber,
             'Amount'           => $amount,
-            'ProcessingCode'   => '13000',
+            'ProcessingCode'   => $processingCode,
             'TerminalID'       => $this->virtualTerminalId,
-            'ForceTransaction' => (int)$force
+            'ForceTransaction' => (int) $force
         ];
 
         $response = $this->makeRequest($function, $params, 'generalService', 'ClientCode');
@@ -345,7 +335,7 @@ class Fidelis
 
         $response = $this->makeRequest($function, $params);
 
-        $returnCode = (int)$response->Table->ReturnCode;
+        $returnCode = (int) $response->Table->ReturnCode;
 
         switch ($returnCode) {
             case 9:
@@ -376,7 +366,7 @@ class Fidelis
 
         $response = $this->makeRequest($function, $params);
 
-        $returnCode = (int)$response->Table->ReturnCode;
+        $returnCode = (int) $response->Table->ReturnCode;
 
         switch ($returnCode) {
             case 1:
@@ -404,7 +394,7 @@ class Fidelis
 
         $response = $this->makeRequest($function, $params);
 
-        $returnCode = (int)$response->Table->ReturnCode;
+        $returnCode = (int) $response->Table->ReturnCode;
 
         switch ($returnCode) {
             case 0:
