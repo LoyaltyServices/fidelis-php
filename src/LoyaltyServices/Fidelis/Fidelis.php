@@ -184,7 +184,7 @@ class Fidelis
     {
         $function = 'CreateTransactionWeb_PHP';
         $params   = [
-            'cardNumber'       => $cardNumber,
+            'CardNumber'       => $cardNumber,
             'Amount'           => $amount,
             'ProcessingCode'   => $processingCode,
             'TerminalID'       => $this->virtualTerminalId,
